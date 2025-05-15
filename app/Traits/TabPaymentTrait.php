@@ -74,7 +74,7 @@ trait TabPaymentTrait
     {
         $this->payload = $requestData;
         $this->payload['post']['url'] = $this->webhook_url;
-        $this->payload['redirect']['url'] = $this->redirect_url;
+        $this->payload['redirect']['url'] = $this->callback_url;
         $this->payload['source']['id'] = config('payment.payment_gatways.' . $this->provider . '.methods.' . $requestData['payment_method'] . '.integration_id');
 
         return $this->payload;

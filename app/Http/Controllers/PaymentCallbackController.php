@@ -15,14 +15,14 @@ class PaymentCallbackController extends Controller
         $this->paymentGateway = $paymentGateway;
     }
 
-    public function processedCallback(Request $request)
+    public function webhook(Request $request)
     {
-        return $this->paymentGateway->processedCallback($request);
+        return $this->paymentGateway->webhook($request);
     }
 
-    public function responseCallback(Request $request): RedirectResponse
+    public function callback(Request $request): RedirectResponse
     {
-        $response = $this->paymentGateway->responseCallback($request);
+        $response = $this->paymentGateway->callback($request);
         if ($response) {
 
             return redirect()->route('payment.success');

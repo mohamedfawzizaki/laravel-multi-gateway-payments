@@ -200,7 +200,7 @@ class PaymobPaymentService extends ExampleBasePaymentService
 
     }
 
-    public function processedCallback(Request $request)
+    public function webhook(Request $request)
     {
         // Log the full webhook payload
         Log::info('Payment Callback Received:', $request->all());
@@ -242,7 +242,7 @@ class PaymobPaymentService extends ExampleBasePaymentService
         return response()->json(['message' => 'Callback processed']);
     }
 
-    public function responseCallback(Request $request): bool
+    public function callback(Request $request): bool
     {
         $response = $request->all();
         Storage::put('paymob_response.json', json_encode($request->all()));

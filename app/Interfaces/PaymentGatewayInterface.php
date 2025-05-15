@@ -7,6 +7,6 @@ use Illuminate\Http\Request;
 interface PaymentGatewayInterface
 {
     public function sendPayment(Request $request);
-    public function processedCallback(Request $request);
-    public function responseCallback(Request $request);
+    public function webhook(Request $request);
+    public function callback(Request $request);
 }

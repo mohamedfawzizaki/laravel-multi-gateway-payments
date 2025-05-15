@@ -3,41 +3,50 @@
 namespace App\Services;
 
 use App\Interfaces\PaymentGatewayInterface;
-use App\Traits\TabPaymentTrait;
+use App\Traits\MyFatoorahPaymentTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class TabPaymentService extends BasePaymentService implements PaymentGatewayInterface
+class MyFatoorahPayment extends BasePaymentService implements PaymentGatewayInterface
 {
-    use TabPaymentTrait;
+    use MyFatoorahPaymentTrait;
     protected array $payload = [];
+
+    protected string $error_callback_url;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->header['Authorization'] = 'Bearer ' . $this->api_key;
+
+        $this->error_callback_url = config('payment.payment_gatways.' . $this->provider . '.error_callback', '');
     }
 
     public function sendPayment(Request $request) //: array
     {
-        $validator = $this->ValidatePaymentPayload($request);
-
-        if ($validator['success'] !== true) {
-            return [
-                'success' => $validator['success'],
-                'status' => $validator['status'],
-                'message' => $validator['message'],
-                'data' => $validator['data'] ?? null
-            ];
-        }
-
         $this->payload = $this->makePayload($request->all());
 
-        $paymentResposne = $this->buildRequest('POST', $this->charge_path, $this->payload)->getData(true);
+        
+        $paymentResposne = $this->buildRequest('POST', $this->charge_path, $this->payload['data'])->getData(true);
+        
+        if (!$paymentResposne['success']) {
+            Log::error('MyFatoorahPayment sendPayment error: ' . $paymentResposne['data']['Message']);
+            return $this->makeUnifiedResponse(
+                $paymentResposne['success'],
+                $paymentResposne['status'],
+            );
+        }
 
-        return $this->makeResponse($paymentResposne);
+        return $this->makeUnifiedResponse(
+            $paymentResposne['success'],
+            $paymentResposne['status'],
+            $paymentResposne['data']['Data']['InvoiceURL'],
+            '',
+            $this->payload['data']['InvoiceValue'],
+            '',
+        );
     }
 
     public function webhook(Request $request)
@@ -49,16 +58,6 @@ class TabPaymentService extends BasePaymentService implements PaymentGatewayInte
         ]);
 
         $data = $request->all();
-
-        // Optional: Verify 'hash' header if required
-        $hashHeader = $request->header('hash');
-        $hashString = $request->header('hashstring');
-
-        if (!$this->validateHash($data, $hashString)) {
-            // Invalid webhook signature
-            Log::warning("Invalid signature");
-            abort(400, 'Invalid signature');
-        }
 
         // Validate charge object
         if (isset($data['object']) && $data['object'] === 'charge') {

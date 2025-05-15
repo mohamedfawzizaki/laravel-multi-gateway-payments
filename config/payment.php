@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'current_gateway' => 'tab',
+    'current_gateway' => 'myfatoorah',
     'payment_gatways' => [
         'paymob' => [
             'base_url'  => env('PAYMOB_BASE_URL', 'https://accept.paymob.com'),
@@ -72,6 +72,30 @@ return [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
             ],
+            'webhook' => env('TAB_WEBHOOK_URL', ''),
+            'callback' => env('TAB_CALLBACK_URL', ''),
+        ],
+        'myfatoorah' => [
+            'base_url'      => env('MYFATOORAH_BASE_URL', 'https://apitest.myfatoorah.com'),
+            'charge_path'   => env('MYFATOORAH_CHARGE_PATH', '/v2/SendPayment/'),
+            'api_key'       => env('MYFATOORAH_API_KEY'),
+            'secret_key'    => env('MYFATOORAH_SECRET_KEY'),
+            'base_currency' => env('MYFATOORAH_BASE_CURRENCY', 'EGP'),
+            'methods' => [
+                'all' => [
+                    'integration_id' => 'src_all',
+                ],
+                'card' => [
+                    'integration_id' => 'src_card',
+                ],
+            ],
+            'header' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ],
+            'webhook' => env('MYFATOORAH_WEBHOOK_URL', ''),
+            'callback' => env('MYFATOORAH_CALLBACK_URL', ''),
+            'error_callback' => env('MYFATOORAH_ERROR_CALLBACK_URL', ''),
         ],
     ],
 

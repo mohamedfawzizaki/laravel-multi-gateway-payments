@@ -9,39 +9,40 @@ use App\Exceptions\Payments\BillingDataException;
 use App\Exceptions\Payments\InvlidPaymentMethodException;
 use App\Exceptions\Payments\InvlidPaymentBillingDataException;
 use App\Exceptions\Payments\FailedToGeneratePaymentKeyException;
+use Illuminate\Validation\Rule;
 
 class BasePaymentService
 {
     protected string $provider;
     protected string $base_url;
     protected string $charge_path;
-    protected string $auth_path;
+    protected ?string $auth_path;
     protected string $api_key;
-    protected string $secret_key;
-    protected string $public_key;
-    protected array $paymentMethods;
+    protected ?string $secret_key;
+    protected ?string $public_key;
+    protected ?array $paymentMethods;
     protected array $header;
-    protected string $base_currency;
-    protected string $webhook_url;
-    protected string $redirect_url;
+    protected ?string $base_currency;
+    protected ?string $webhook_url;
+    protected ?string $callback_url;
 
     public function __construct()
     {
         $this->provider    = config('payment.current_gateway');
 
-        $this->base_url    = rtrim(config('payment.payment_gatways.' . $this->provider . '.base_url'), '/');
-        $this->charge_path   = '/' . trim(config('payment.payment_gatways.' . $this->provider . '.charge_path'), '/');
-        $this->auth_path   = '/' . trim(config('payment.payment_gatways.' . $this->provider . '.auth_path'), '/');
+        $this->base_url    = rtrim(config('payment.payment_gatways.' . $this->provider . '.base_url', ''), '/');
+        $this->charge_path   = '/' . trim(config('payment.payment_gatways.' . $this->provider . '.charge_path', ''), '/');
+        $this->auth_path   = '/' . trim(config('payment.payment_gatways.' . $this->provider . '.auth_path', ''), '/');
         $this->api_key     = config('payment.payment_gatways.' . $this->provider . '.api_key');
-        $this->public_key  = config('payment.payment_gatways.' . $this->provider . '.public_key');
-        $this->secret_key  = config('payment.payment_gatways.' . $this->provider . '.secret_key');
-        $this->header      = config('payment.payment_gatways.' . $this->provider . '.header');
+        $this->public_key  = config('payment.payment_gatways.' . $this->provider . '.public_key', '');
+        $this->secret_key  = config('payment.payment_gatways.' . $this->provider . '.secret_key', '');
+        $this->header      = config('payment.payment_gatways.' . $this->provider . '.header', []);
 
-        $this->paymentMethods = config('payment.payment_gatways.' . $this->provider . '.methods');
-        $this->base_currency  = config('payment.payment_gatways.' . $this->provider . '.base_currency');
+        $this->paymentMethods = config('payment.payment_gatways.' . $this->provider . '.methods', []);
+        $this->base_currency  = config('payment.payment_gatways.' . $this->provider . '.base_currency', '');
 
-        $this->webhook_url  = env('WEBHOOK_URL', '');
-        $this->redirect_url = env('REDIRECT_URL', '');
+        $this->webhook_url  = config('payment.payment_gatways.' . $this->provider . '.webhook', '');
+        $this->callback_url  = config('payment.payment_gatways.' . $this->provider . '.callback', '');
     }
 
     protected function buildRequest($method, $url, $data = null, $type = 'json')
@@ -64,6 +65,33 @@ class BasePaymentService
             ], 500);
         }
     }
+
+
+    protected function makeUnifiedResponse(bool $success, int $status, string $paymentUrl = '', string $transactionId = '', ?float $amount = null, string $currency = '')
+    {
+        if (!isset($success) || !$success) {
+            return [
+                'success' => $success,
+                'status' => $status,
+                'message' => 'Failed to initiate payment',
+                'data' => null
+            ];
+        }
+
+        return [
+            'success' => $success,
+            'status' => $status,
+            'message' => 'Payment initiated successfully',
+            'payment_url' => $paymentUrl,
+            'transaction_id' => $transactionId,
+            'amount' => $amount,
+            'currency' => $currency,
+        ];
+    }
+
+
+
+
 
 
 

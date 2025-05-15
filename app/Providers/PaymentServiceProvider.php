@@ -9,6 +9,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Interfaces\PaymentGatewayInterface;
 use App\Http\Requests\ValidateTabPaymentPayloadRequest;
 use App\Http\Requests\ValidatePaymobPaymentPayloadRequest;
+use App\Services\MyFatoorahPayment;
 
 class PaymentServiceProvider extends ServiceProvider
 {
@@ -27,6 +28,7 @@ class PaymentServiceProvider extends ServiceProvider
             return match ($gateway) {
                 'tab' => new TabPaymentService(),
                 'paymob' => new PaymobPaymentService(),
+                'myfatoorah' => new MyFatoorahPayment(),
                 default => throw new \Exception("Unsupported payment gateway: $gateway"),
             };
         });

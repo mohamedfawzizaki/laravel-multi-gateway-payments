@@ -30,7 +30,7 @@ class ExampleBasePaymentService
     
     
     protected string $webhook_url;
-    protected string $redirect_url;
+    protected string $callback_url;
     
     public function __construct(string $provider)
     {
@@ -54,7 +54,7 @@ class ExampleBasePaymentService
     
     
         $this->webhook_url  = env('WEBHOOK_URL', '');
-        $this->redirect_url = env('REDIRECT_URL', '');
+        $this->callback_url = env('callback_url', '');
     
     
     }
